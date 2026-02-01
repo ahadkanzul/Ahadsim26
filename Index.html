@@ -1,0 +1,200 @@
+<html lang="en">  
+<head>  
+<meta charset="UTF-8">  
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
+<title>Ahad SIM Info | DATABASE</title>  
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">  
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">  
+
+<style>
+:root {
+    --bg-body: #050813;
+    --bg-card: #0f1424;
+    --primary: #00ff00;
+    --primary-hover: #00cc00;
+    --accent: #00ff00;
+    --text-main: #ffffff;
+    --text-sub: #8a9bbd;
+    --border: #1c253b;
+    --whatsapp: #25D366;
+}
+
+* { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Poppins', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+    background-color: var(--bg-body);
+    overflow: hidden;
+}
+
+/* --- MATRIX BACKGROUND --- */
+canvas#matrix-bg { 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    z-index: -1; 
+    background: var(--bg-body);
+}
+
+.app-container, .login-card {
+    z-index: 2; 
+    width: 100%; max-width: 420px; 
+    display: flex; flex-direction: column; align-items: center;
+}
+
+/* --- CARDS & LOGIN --- */
+.card, .search-card {
+    width: 100%; background: rgba(0,0,0,0.7); border: 1px solid var(--primary);
+    border-radius: 16px; padding: 25px 20px; box-shadow: 0 0 20px rgba(0,255,0,0.5); margin-bottom: 15px;
+}
+
+.input-group { position: relative; margin-bottom: 20px; }
+input { width: 100%; background: #010a01; border: 1px solid #004400; color: #00ff00; padding: 16px 15px; font-size: 1.1rem; border-radius: 8px; font-family: 'Poppins', sans-serif; transition: 0.3s; }
+input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(0, 255, 0, 0.5); }
+input::placeholder { color: #008800; }
+
+.btn-main {
+    width: 100%; background: var(--primary); color: black;
+    border: none; padding: 16px; font-size: 1rem; font-weight: 700;
+    border-radius: 8px; cursor: pointer; text-transform: uppercase;
+    letter-spacing: 1px; font-family: 'Rajdhani', sans-serif;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 255, 0, 0.5);
+}
+.btn-main:hover { background: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 255, 0, 0.7); }
+.btn-main:active { transform: translateY(0); }
+
+/* --- RESULTS --- */
+#results-area { width: 100%; margin-top: 20px; display: none; color: #00ff00; }
+.loader { text-align: center; color: var(--primary); font-size: 1.5rem; margin: 20px 0; display: none; }
+
+/* --- MATRIX GREEN --- */
+.data-card { background: rgba(0, 0, 0, 0.7); border-left: 4px solid #00ff00; border-radius: 8px; margin-bottom: 15px; overflow: hidden; animation: slideUp 0.4s ease-out; }
+@keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+.dc-header { background: rgba(0,255,0,0.1); padding: 10px 15px; font-size: 0.85rem; font-weight: 700; color: #00ff00; display: flex; justify-content: space-between; }
+.dc-body { padding: 15px; }
+.dc-row { display: flex; justify-content: space-between; margin-bottom: 8px; border-bottom: 1px dashed #004400; padding-bottom: 5px; }
+.dc-row:last-child { border: none; margin: 0; padding: 0; }
+.lbl { color: #00aa00; font-size: 0.8rem; font-weight: 500; }
+.val { color: #00ff00; font-size: 0.9rem; font-weight: 600; text-align: right; word-break: break-all; }
+</style>
+</head>
+<body>  
+
+<canvas id="matrix-bg"></canvas>
+
+<div class="login-card" id="login-screen">
+    <div class="card" style="max-width: 350px;">
+        <h2 style="text-align:center; margin-bottom:20px; color:#00ff00;">Login</h2>
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Username">
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password">
+        </div>
+        <button class="btn-main" onclick="checkLogin()">LOGIN</button>
+    </div>
+</div>
+
+<div class="app-container" id="main-app" style="display:none;">  
+    <div class="logo-wrapper"> <div class="logo-circle">A</div> </div>  
+
+    <div class="title-box">  
+        <h1><span class="arrows"><i class="fas fa-chevron-left"></i><i class="fas fa-chevron-left"></i></span> Ahad SIM Info <span class="arrows"><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i></span></h1>  
+        <p class="subtitle">Sim Database</p>  
+        <p class="tagline">Secure, ads-free identity lookup. The luxury of efficiency.</p>  
+    </div>  
+
+    <div class="search-card">  
+        <div class="input-group">  
+            <input type="number" id="target" placeholder="Enter Mobile Number or CNIC">  
+        </div>  
+        <button class="btn-main" onclick="fetchData()">RESOLVE IDENTITY</button>  
+    </div>  
+
+    <div id="loader" class="loader">  
+        <i class="fas fa-circle-notch fa-spin"></i>  
+    </div>  
+
+    <div id="results-area"></div>  
+</div>  
+
+<script>
+// --- MATRIX EFFECT ---
+const canvas = document.getElementById('matrix-bg');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789あいうえおカキクケコサシスセソ'.split('');
+const fontSize = 16;
+const columns = Math.floor(canvas.width / fontSize);
+const drops = Array(columns).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff00';
+    ctx.font = fontSize + "px monospace";
+    for(let i=0; i<drops.length; i++){
+        const text = letters[Math.floor(Math.random()*letters.length)];
+        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+        drops[i]++;
+        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
+    }
+}
+setInterval(drawMatrix, 50);
+
+// --- LOGIN & VOICE ---
+function checkLogin() {
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    if(user === 'ahad' && pass === 'a2z12345') {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('main-app').style.display = 'flex';
+        const msg = new SpeechSynthesisUtterance("Welcome to Ahad SIM Info");
+        window.speechSynthesis.speak(msg);
+    } else { alert("Invalid username or password!"); }
+}
+
+// --- SIM INFO FETCH ---
+const API_URL = "https://sim.f-a-k.workers.dev/?q=";
+const loader = document.getElementById('loader');
+const resArea = document.getElementById('results-area');
+const input = document.getElementById('target');
+
+async function fetchData() {
+    const query = input.value.trim();
+    if(query.length < 3) { alert("Please enter a valid number."); return; }
+    resArea.innerHTML=''; resArea.style.display='block'; loader.style.display='block';
+    try {
+        await new Promise(r=>setTimeout(r,800));
+        const req = await fetch(API_URL + query);
+        const json = await req.json();
+        loader.style.display='none';
+        if(json.status==='success') renderCards(json.data);
+        else resArea.innerHTML=`<div style="text-align:center; color:#ff4444; margin-top:10px;">No Data Found</div>`;
+    } catch(e){ loader.style.display='none'; resArea.innerHTML=`<div style="text-align:center; color:#ff4444; margin-top:10px;">Connection Error</div>`; }
+}
+
+function renderCards(data){
+    let records = Array.isArray(data)?data:[data];
+    let html='';
+    records.forEach((rec,idx)=>{
+        html+=`<div class="data-card"><div class="dc-header"><span>RECORD #${idx+1}</span><span><i class="fas fa-check-circle"></i> VERIFIED</span></div><div class="dc-body">`;
+        for(const [key,val] of Object.entries(rec)){
+            if(['response_code','credit','api_owner'].includes(key)) continue;
+            html+=`<div class="dc-row"><span class="lbl">${key.toUpperCase()}</span><span class="val">${val}</span></div>`;
+        }
+        html+='</div></div>';
+    });
+    resArea.innerHTML=html;
+}
+
+input.addEventListener("keypress", e => { if(e.key==="Enter") fetchData(); });
+</script>
+</body>
+</html>
